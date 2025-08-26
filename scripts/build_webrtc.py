@@ -19,7 +19,6 @@ dist_inc_dir: str = os.path.join(dist_dir, 'include')
 system_platform: str = platform.system().lower()
 system_architecture: str = platform.machine().lower()
 
-argparser: argparse.ArgumentParser = None
 args: argparse.Namespace = None
 env = os.environ.copy()
 
@@ -35,25 +34,24 @@ def main():
 		distribute()
 
 def parse_args():
-	global argparser
-	argparser = argparse.ArgumentParser(description='Build WebRTC.', formatter_class=argparse.RawTextHelpFormatter)
-	subparser = argparser.add_subparsers(title='command', dest='command', help='')
+	arg_parser = argparse.ArgumentParser(description='Build WebRTC.', formatter_class=argparse.RawTextHelpFormatter)
+	cmd_parser = arg_parser.add_subparsers(title='command', dest='command', help='')
 
-	run_argparser = subparser.add_parser('run', help='Run all build steps.')
-	run_argparser.add_argument('--debug', type=str_to_bool, default=False, help='Compile a debug build.')
-	run_argparser.add_argument('--branch', type=str, help='Optional branch to check out (e.g. branch-heads/7204).')
+	run_parser = cmd_parser.add_parser('run', help='Run all build steps.')
+	run_parser.add_argument('--debug', type=str_to_bool, default=False, help='Compile a debug build.')
+	run_parser.add_argument('--branch', type=str, help='Optional branch to check out (e.g. branch-heads/7204).')
 
-	fetch_argparser = subparser.add_parser('fetch', help='Fetch source.')
-	fetch_argparser.add_argument('--branch', type=str, help='Optional branch to check out (e.g. branch-heads/7204).')
+	fetch_parser = cmd_parser.add_parser('fetch', help='Fetch source.')
+	fetch_parser.add_argument('--branch', type=str, help='Optional branch to check out (e.g. branch-heads/7204).')
 
-	build_argparser = subparser.add_parser('build', help='Build.')
-	build_argparser.add_argument('--debug', type=str_to_bool, default=False, help='Compile a debug build.')
-	build_argparser.add_argument('--branch', type=str, help='Optional branch to check out (e.g. branch-heads/7204).')
+	build_parser = cmd_parser.add_parser('build', help='Build.')
+	build_parser.add_argument('--debug', type=str_to_bool, default=False, help='Compile a debug build.')
+	build_parser.add_argument('--branch', type=str, help='Optional branch to check out (e.g. branch-heads/7204).')
 
-	dist_argparser = subparser.add_parser('dist', help='Distribute build output.')
+	dist_parser = cmd_parser.add_parser('dist', help='Distribute build output.')
 
 	global args
-	args = argparser.parse_args()
+	args = arg_parser.parse_args()
 
 def install_prerequisites():
 	print('📦 Install prerequisites')
