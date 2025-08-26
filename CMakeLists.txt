@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 4.0.3)
 project(webrtc-template VERSION 1.0.0)
 
-# ------------------------
+# --------------------
 # Compiler Options
-# ------------------------
+# --------------------
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -12,9 +12,9 @@ if(WIN32)
 	set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded")  # Equivalent to /MT, matching webrtc.lib
 endif()
 
-# ------------------------
+# --------------------
 # Directories
-# ------------------------
+# --------------------
 
 set(EXTERNAL_DIR "${CMAKE_SOURCE_DIR}/external" CACHE PATH "Path to external dependencies")
 set(WEBRTC_DIR "${EXTERNAL_DIR}/webrtc")
@@ -32,9 +32,9 @@ link_directories(
 	${WEBRTC_LIB_DIR}
 )
 
-# ------------------------
+# --------------------
 # Targets
-# ------------------------
+# --------------------
 
 add_executable(${PROJECT_NAME} src/main.cpp)
 
