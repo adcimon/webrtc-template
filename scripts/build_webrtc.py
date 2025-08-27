@@ -87,46 +87,16 @@ def fetch_source():
 			)
 			print('✅ Success fetching source')
 		except FileNotFoundError:
-			print("❌ Error fetching source: Command fetch not found, depot_tools may not be in PATH")
+			print('❌ Error fetching source: Command fetch not found, depot_tools may not be in PATH')
 			sys.exit(1)
 		except subprocess.CalledProcessError as e:
 			print(f'❌ Error fetching source: {e}')
 			sys.exit(1)
 
-		# (Optional) Checkout branch.
 		if args.branch:
-			print(f'⏳ Checking out branch: {args.branch}')
-			try:
-				subprocess.run(
-					f'git checkout {args.branch}',
-					cwd=webrtc_src_dir,
-					env=env,
-					check=True,
-					shell=True,
-					stdout=sys.stdout,
-					stderr=sys.stderr
-				)
-				print(f'✅ Success checking out branch')
-			except subprocess.CalledProcessError as e:
-				print(f'❌ Error checking out branch: {e}')
-				sys.exit(1)
+			checkout_branch(args.branch)
 
-		# Sync dependencies.
-		try:
-			print(f'⏳ Syncing dependencies...')
-			subprocess.run(
-				f'gclient sync -D --force --reset --with_branch_heads --with_tags',
-				cwd=webrtc_src_dir,
-				env=env,
-				check=True,
-				shell=True,
-				stdout=sys.stdout,
-				stderr=sys.stderr
-			)
-			print('✅ Success syncing dependencies')
-		except subprocess.CalledProcessError as e:
-			print(f'❌ Error syncing dependencies: {e}')
-			sys.exit(1)
+		sync_deps()
 
 		apply_patches()
 	else:
@@ -340,6 +310,40 @@ def enable_git_longpaths():
 		print('✅ Success enabling Git long paths')
 	except subprocess.CalledProcessError as e:
 		print(f'❌ Error enabling Git long paths: {e}')
+		sys.exit(1)
+
+def checkout_branch(branch: str):
+	try:
+		print(f'⏳ Checking out branch: {branch}')
+		subprocess.run(
+			f'git checkout {branch}',
+			cwd=webrtc_src_dir,
+			env=env,
+			check=True,
+			shell=True,
+			stdout=sys.stdout,
+			stderr=sys.stderr
+		)
+		print(f'✅ Success checking out branch')
+	except subprocess.CalledProcessError as e:
+		print(f'❌ Error checking out branch: {e}')
+		sys.exit(1)
+
+def sync_deps():
+	try:
+		print(f'⏳ Syncing dependencies...')
+		subprocess.run(
+			f'gclient sync -D --force --reset --with_branch_heads --with_tags',
+			cwd=webrtc_src_dir,
+			env=env,
+			check=True,
+			shell=True,
+			stdout=sys.stdout,
+			stderr=sys.stderr
+		)
+		print('✅ Success syncing dependencies')
+	except subprocess.CalledProcessError as e:
+		print(f'❌ Error syncing dependencies: {e}')
 		sys.exit(1)
 
 def apply_patches():
