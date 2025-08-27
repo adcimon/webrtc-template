@@ -20,7 +20,7 @@ system_platform: str = platform.system().lower()
 system_architecture: str = platform.machine().lower()
 
 args: argparse.Namespace = None
-env = os.environ.copy()
+env: dict[str, str] = os.environ.copy()
 
 def main():
 	parse_args()
@@ -42,16 +42,22 @@ def parse_args():
 	arg_parser = argparse.ArgumentParser(description='Build WebRTC.', formatter_class=argparse.RawTextHelpFormatter)
 	cmd_parser = arg_parser.add_subparsers(title='command', dest='command', help='')
 
+	def add_debug_argument(parser: argparse.ArgumentParser):
+		parser.add_argument('--debug', type=str_to_bool, default=False, help='Compile a debug build.')
+
+	def add_branch_argument(parser: argparse.ArgumentParser):
+		parser.add_argument('--branch', type=str, help='Optional branch to check out (e.g. branch-heads/7204).')
+
 	run_parser = cmd_parser.add_parser('run', help='Run all build steps.')
-	run_parser.add_argument('--debug', type=str_to_bool, default=False, help='Compile a debug build.')
-	run_parser.add_argument('--branch', type=str, help='Optional branch to check out (e.g. branch-heads/7204).')
+	add_debug_argument(run_parser)
+	add_branch_argument(run_parser)
 
 	fetch_parser = cmd_parser.add_parser('fetch', help='Fetch source.')
-	fetch_parser.add_argument('--branch', type=str, help='Optional branch to check out (e.g. branch-heads/7204).')
+	add_branch_argument(fetch_parser)
 
 	build_parser = cmd_parser.add_parser('build', help='Build.')
-	build_parser.add_argument('--debug', type=str_to_bool, default=False, help='Compile a debug build.')
-	build_parser.add_argument('--branch', type=str, help='Optional branch to check out (e.g. branch-heads/7204).')
+	add_debug_argument(build_parser)
+	add_branch_argument(build_parser)
 
 	dist_parser = cmd_parser.add_parser('dist', help='Distribute build output.')
 
@@ -188,6 +194,10 @@ def distribute():
 	print('🚀 Distribute')
 
 	# Clean directories.
+	def remove_readonly(func, path, _):
+		os.chmod(path, stat.S_IWRITE)
+		func(path)
+
 	for path in [dist_lib_dir, dist_inc_dir]:
 		if os.path.exists(path):
 			print(f'⏳ Cleaning directory: {path}')
@@ -391,10 +401,6 @@ def apply_patches():
 		except subprocess.CalledProcessError as e:
 			print(f'❌ Error aplying patch: {e}')
 			sys.exit(1)
-
-def remove_readonly(func, path, _):
-	os.chmod(path, stat.S_IWRITE)
-	func(path)
 
 def copy_headers(src_dir, dst_dir, ignore_dirs=[]):
 	count = 0
