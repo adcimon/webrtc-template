@@ -24,7 +24,12 @@ env = os.environ.copy()
 
 def main():
 	parse_args()
+
+	print(f'Platform: {system_platform}')
+	print(f'Architecture: {system_architecture}')
+
 	install_prerequisites()
+
 	if args.command == 'run' or args.command == 'fetch':
 		fetch_source()
 	if args.command == 'run' or args.command == 'build':
@@ -56,42 +61,14 @@ def parse_args():
 def install_prerequisites():
 	print('📦 Install prerequisites')
 
-	# Enable Git long paths.
 	if system_platform == 'windows':
+		check_windows_environment()
 		enable_git_longpaths()
 
-	# Get depot_tools.
-	print('⏳ Getting depot_tools...')
-
-	depot_tools_repo = "https://chromium.googlesource.com/chromium/tools/depot_tools.git"
-	depot_tools_dir = os.path.join(working_dir, 'depot_tools')
-
-	if os.path.isdir(depot_tools_dir):
-		print(f'✅ Using depot_tools at: {depot_tools_dir}')
-	else:
-		print(f'⏳ Cloning depot_tools into: {depot_tools_dir}')
-		try:
-			subprocess.run(
-				f'git clone {depot_tools_repo} {depot_tools_dir}',
-				check=True,
-				stdout=sys.stdout,
-				stderr=sys.stderr
-			)
-			print(f'✅ Success cloning depot_tools')
-		except subprocess.CalledProcessError as e:
-			print(f'❌ Error cloning depot_tools: {e}')
-			sys.exit(1)
-
-	# Add depot_tools to path.
-	add_to_path(depot_tools_dir)
-
-	# Windows: Use local Visual Studio toolchain.
-	if system_platform == 'windows':
-		print('✅ Using local Visual Studio toolchain')
-		env['DEPOT_TOOLS_WIN_TOOLCHAIN'] = '0'
+	get_depot_tools()
 
 def fetch_source():
-	print('⬇️ Fetch source')
+	print('📁 Fetch source')
 
 	if not os.path.exists(webrtc_dir):
 		os.makedirs(webrtc_dir)
@@ -153,7 +130,7 @@ def fetch_source():
 
 		apply_patches()
 	else:
-		print(f'✅ Using source directory: {webrtc_dir}')
+		print(f'✅ Found source directory: {webrtc_dir}')
 
 def configure_build():
 	print('⚙️ Configure build')
@@ -263,8 +240,7 @@ def distribute():
 
 	# Copy headers.
 	print(f'⏳ Copying headers from {webrtc_src_dir} to {dist_inc_dir}...')
-	ignore_dirs = ['out']
-	copy_headers(webrtc_src_dir, dist_inc_dir, ignore_dirs)
+	copy_headers(webrtc_src_dir, dist_inc_dir, ['out'])
 
 def str_to_bool(value: str) -> bool:
 	if isinstance(value, bool):
@@ -275,6 +251,80 @@ def str_to_bool(value: str) -> bool:
 		return False
 	else:
 		return False
+
+def add_to_path(dir: str):
+	current_path = env.get('PATH', '')
+	if dir not in current_path:
+		env['PATH'] = dir + os.pathsep + current_path
+		print(f'✅ Added to PATH: {dir}')
+	else:
+		print(f'✅ Already in PATH: {dir}')
+
+def get_target_os() -> str:
+	if system_platform == 'linux':
+		return 'linux'
+	elif system_platform == 'darwin':
+		return 'mac'
+	elif system_platform == 'windows':
+		return 'win'
+	else:
+		print(f'❌ Unsupported platform: {system_platform}')
+		sys.exit(1)
+
+def get_target_cpu() -> str:
+	if system_architecture in ['x86', 'i386', 'i686']:
+		return 'x86'
+	elif system_architecture in ['x86_64', 'amd64']:
+		return 'x64'
+	elif system_architecture in ['arm64', 'aarch64']:
+		return 'arm64'
+	else:
+		print(f'❌ Unsupported architecture: {system_architecture}')
+		sys.exit(1)
+
+def get_depot_tools():
+	print('⏳ Getting depot_tools...')
+
+	depot_tools_repo = 'https://chromium.googlesource.com/chromium/tools/depot_tools.git'
+	depot_tools_dir = os.path.join(working_dir, 'depot_tools')
+
+	if os.path.isdir(depot_tools_dir):
+		print(f'✅ Using depot_tools at: {depot_tools_dir}')
+	else:
+		print(f'⏳ Cloning depot_tools into: {depot_tools_dir}')
+		try:
+			subprocess.run(
+				f'git clone {depot_tools_repo} {depot_tools_dir}',
+				check=True,
+				stdout=sys.stdout,
+				stderr=sys.stderr
+			)
+			print(f'✅ Success cloning depot_tools')
+		except subprocess.CalledProcessError as e:
+			print(f'❌ Error cloning depot_tools: {e}')
+			sys.exit(1)
+
+	add_to_path(depot_tools_dir)
+
+	if system_platform == 'windows':
+		print('✅ Using local Visual Studio toolchain')
+		env['DEPOT_TOOLS_WIN_TOOLCHAIN'] = '0'
+
+def check_windows_environment(min_version=(17, 0, 0)):
+	vs_architecture = os.environ.get('VSCMD_ARG_TGT_ARCH')
+	vs_version = os.environ.get('VSCMD_VER')
+	vs_version_semver = tuple(int(part) for part in vs_version.split('.'))
+	vc_tools_dir = os.environ.get('VCINSTALLDIR')
+
+	print(f'Visual Studio target architecture: {vs_architecture}')
+	print(f'Visual Studio version: {vs_version}')
+	print(f'Visual C++: {vc_tools_dir}')
+
+	if vs_architecture == 'x64' and vs_version_semver > min_version and vc_tools_dir:
+		print('✅ Running from valid environment')
+	else:
+		print('❌ Error: Invalid environment, this script must be run from "x64 Native Tools Command Prompt for VS"')
+		sys.exit(1)
 
 def enable_git_longpaths():
 	try:
@@ -291,14 +341,6 @@ def enable_git_longpaths():
 	except subprocess.CalledProcessError as e:
 		print(f'❌ Error enabling Git long paths: {e}')
 		sys.exit(1)
-
-def add_to_path(dir: str):
-	current_path = env.get('PATH', '')
-	if dir not in current_path:
-		env['PATH'] = dir + os.pathsep + current_path
-		print(f'✅ Added to PATH: {dir}')
-	else:
-		print(f'✅ Already in PATH: {dir}')
 
 def apply_patches():
 	common_patches = [
@@ -345,28 +387,6 @@ def apply_patches():
 		except subprocess.CalledProcessError as e:
 			print(f'❌ Error aplying patch: {e}')
 			sys.exit(1)
-
-def get_target_os() -> str:
-	if system_platform == 'linux':
-		return 'linux'
-	elif system_platform == 'darwin':
-		return 'mac'
-	elif system_platform == 'windows':
-		return 'win'
-	else:
-		print(f'❌ Unsupported platform: {system_platform}')
-		sys.exit(1)
-
-def get_target_cpu() -> str:
-	if system_architecture in ['x86', 'i386', 'i686']:
-		return 'x86'
-	elif system_architecture in ['x86_64', 'amd64']:
-		return 'x64'
-	elif system_architecture in ['arm64', 'aarch64']:
-		return 'arm64'
-	else:
-		print(f'❌ Unsupported architecture: {system_architecture}')
-		sys.exit(1)
 
 def remove_readonly(func, path, _):
 	os.chmod(path, stat.S_IWRITE)

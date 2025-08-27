@@ -9,7 +9,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 if(WIN32)
-	set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded")  # Equivalent to /MT, matching webrtc.lib
+	set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded")  # Equivalent to /MT, matching libwebrtc
 endif()
 
 # --------------------
