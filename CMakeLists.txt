@@ -9,14 +9,19 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 if(WIN32)
-	set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded")  # Equivalent to /MT, matching libwebrtc
+	set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded")  # Static multithread runtime library (/MT), matching libwebrtc
 endif()
 
 # --------------------
 # Directories
 # --------------------
 
+# External
+
 set(EXTERNAL_DIR "${CMAKE_SOURCE_DIR}/external" CACHE PATH "Path to external dependencies")
+
+# WebRTC
+
 set(WEBRTC_DIR "${EXTERNAL_DIR}/webrtc")
 set(WEBRTC_INC_DIR "${WEBRTC_DIR}/include")
 set(WEBRTC_LIB_DIR "${WEBRTC_DIR}/lib")
@@ -36,7 +41,14 @@ link_directories(
 # Targets
 # --------------------
 
-add_executable(${PROJECT_NAME} src/main.cpp)
+set(
+	TARGETS
+	src/main.cpp
+)
+
+add_executable(${PROJECT_NAME} ${TARGETS})
+
+# WebRTC
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE
 	WEBRTC_ALLOW_DEPRECATED_NAMESPACES
@@ -49,9 +61,9 @@ if(UNIX)
 		__STDC_CONSTANT_MACROS=1
 	)
 	target_link_libraries(${PROJECT_NAME} PRIVATE
-		libwebrtc.a
 		dl
 		Dmoguids
+		libwebrtc.a
 		Msdmo
 		pthread
 		Secur32
@@ -108,13 +120,13 @@ if(WIN32)
 		_WIN32_WINNT=0x0A00
 	)
 	target_link_libraries(${PROJECT_NAME} PRIVATE
+		dmoguids.lib
+		msdmo.lib
+		secur32.lib
+		Strmiids.lib
 		webrtc.lib
 		winmm.lib
-		secur32.lib
-		dmoguids.lib
 		wmcodecdspuuid.lib
-		msdmo.lib
-		Strmiids.lib
 		WS2_32
 	)
 endif()
