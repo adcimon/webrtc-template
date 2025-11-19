@@ -42,11 +42,11 @@ link_directories(
 # --------------------
 
 set(
-	TARGETS
+	SOURCES
 	src/main.cpp
 )
 
-add_executable(${PROJECT_NAME} ${TARGETS})
+add_executable(${PROJECT_NAME} ${SOURCES})
 
 # WebRTC
 
