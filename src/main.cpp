@@ -1,5 +1,3 @@
-#define WEBRTC_ALLOW_DEPRECATED_NAMESPACES
-
 #include "rtc_base/logging.h"
 #include "rtc_base/log_sinks.h"
 #include "rtc_base/ssl_adapter.h"
