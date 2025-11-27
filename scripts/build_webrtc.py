@@ -9,8 +9,8 @@ import sys
 script_dir: str = os.path.dirname(os.path.abspath(__file__))
 working_dir: str = os.path.abspath(os.path.join(script_dir, '..', 'webrtc'))
 patches_dir: str = os.path.join(working_dir, 'patches')
-webrtc_dir: str = os.path.join(working_dir, 'webrtc')
-webrtc_src_dir: str = os.path.join(webrtc_dir, 'src')
+checkout_dir: str = os.path.join(working_dir, 'checkout')
+checkout_src_dir: str = os.path.join(checkout_dir, 'src')
 external_dir: str = os.path.abspath(os.path.join(script_dir, '..', 'external'))
 dist_dir: str = os.path.join(external_dir, 'webrtc')
 dist_lib_dir: str = os.path.join(dist_dir, 'lib')
@@ -76,15 +76,15 @@ def install_prerequisites():
 def fetch_source():
 	print('📁 Fetch source')
 
-	if not os.path.exists(webrtc_dir):
-		os.makedirs(webrtc_dir)
-		print(f'✅ Created source directory: {webrtc_dir}')
+	if not os.path.exists(checkout_dir):
+		os.makedirs(checkout_dir)
+		print(f'✅ Created source directory: {checkout_dir}')
 
 		try:
 			print('⏳ Fetching source...')
 			subprocess.run(
 				f'fetch --nohooks webrtc',
-				cwd=webrtc_dir,
+				cwd=checkout_dir,
 				env=env,
 				check=True,
 				shell=True,
@@ -106,7 +106,7 @@ def fetch_source():
 
 		apply_patches()
 	else:
-		print(f'✅ Found source directory: {webrtc_dir}')
+		print(f'✅ Found source directory: {checkout_dir}')
 
 def configure_build():
 	print('⚙️ Configure build')
@@ -159,7 +159,7 @@ def configure_build():
 		print('⏳ Configuring build...')
 		subprocess.run(
 			f'gn gen out/Default --args="{build_args}"',
-			cwd=webrtc_src_dir,
+			cwd=checkout_src_dir,
 			env=env,
 			check=True,
 			shell=True,
@@ -178,7 +178,7 @@ def build():
 		print('⏳ Building...')
 		subprocess.run(
 			f'ninja -C out/Default',
-			cwd=webrtc_src_dir,
+			cwd=checkout_src_dir,
 			env=env,
 			check=True,
 			shell=True,
@@ -207,7 +207,7 @@ def distribute():
 
 	# Copy library.
 	lib_name = 'webrtc.lib' if system_platform == 'windows' else 'libwebrtc.a'
-	current_lib_dir = os.path.join(webrtc_src_dir, 'out', 'Default', 'obj', lib_name)
+	current_lib_dir = os.path.join(checkout_src_dir, 'out', 'Default', 'obj', lib_name)
 	new_lib_dir = os.path.join(dist_lib_dir, lib_name)
 	print(f'⏳ Copying library from {current_lib_dir} to {new_lib_dir}...')
 
@@ -219,8 +219,8 @@ def distribute():
 		print('✅ Success copying library')
 
 	# Copy headers.
-	print(f'⏳ Copying headers from {webrtc_src_dir} to {dist_inc_dir}...')
-	copy_headers(webrtc_src_dir, dist_inc_dir, ['out'])
+	print(f'⏳ Copying headers from {checkout_src_dir} to {dist_inc_dir}...')
+	copy_headers(checkout_src_dir, dist_inc_dir, ['out'])
 
 def str_to_bool(value: str) -> bool:
 	if isinstance(value, bool):
@@ -327,7 +327,7 @@ def checkout_branch(branch: str):
 		print(f'⏳ Checking out branch: {branch}')
 		subprocess.run(
 			f'git checkout {branch}',
-			cwd=webrtc_src_dir,
+			cwd=checkout_src_dir,
 			env=env,
 			check=True,
 			shell=True,
@@ -344,7 +344,7 @@ def sync_deps():
 		print(f'⏳ Syncing dependencies...')
 		subprocess.run(
 			f'gclient sync -D --force --reset --with_branch_heads --with_tags',
-			cwd=webrtc_src_dir,
+			cwd=checkout_src_dir,
 			env=env,
 			check=True,
 			shell=True,
@@ -390,7 +390,7 @@ def apply_patches():
 			print(f'⏳ Applying patch: {patch}')
 			subprocess.run(
 				f'git apply "{patch_path}" -v --ignore-space-change --ignore-whitespace --whitespace=nowarn',
-				cwd=webrtc_src_dir,
+				cwd=checkout_src_dir,
 				env=env,
 				check=True,
 				shell=True,
