@@ -271,8 +271,8 @@ def get_depot_tools():
 	if os.path.isdir(depot_tools_dir):
 		print(f'✅ Using depot_tools at: {depot_tools_dir}')
 	else:
-		print(f'⏳ Cloning depot_tools into: {depot_tools_dir}')
 		try:
+			print(f'⏳ Cloning depot_tools into: {depot_tools_dir}')
 			subprocess.run(
 				f'git clone {depot_tools_repo} {depot_tools_dir}',
 				check=True,
