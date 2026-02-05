@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 4.0.3)
+cmake_minimum_required(VERSION 4.2.3)
 
 project(WEBRTC_TEMPLATE)
 

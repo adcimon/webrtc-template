@@ -2,9 +2,9 @@ import os
 import shutil
 import sys
 
-script_dir = os.path.dirname(os.path.abspath(__file__))
-project_dir = os.path.abspath(os.path.join(script_dir, '..'))
-build_dir = os.path.join(project_dir, 'build')
+script_dir: str = os.path.dirname(os.path.abspath(__file__))
+project_dir: str = os.path.abspath(os.path.join(script_dir, '..'))
+build_dir: str = os.path.join(project_dir, 'build')
 
 def main():
 	if os.path.isdir(build_dir):
