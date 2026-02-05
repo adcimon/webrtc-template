@@ -2,7 +2,11 @@
 
 Template to bootstrap a C++ application with WebRTC.
 
-🧪 Tested on:
+📦 Requirements:
+- [CMake](https://cmake.org/)
+- [Python](https://www.python.org/)
+
+🧪 Tested:
 - [ ] Linux
 - [ ] Mac
 - [x] Windows
