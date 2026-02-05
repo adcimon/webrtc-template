@@ -2,7 +2,7 @@
 
 Template to bootstrap a C++ application with WebRTC.
 
-Tested on:
+🧪 Tested on:
 - [ ] Linux
 - [ ] Mac
 - [x] Windows

@@ -293,7 +293,7 @@ def get_depot_tools():
 def check_windows_environment(min_version=(17, 0, 0)):
 	vs_architecture = os.environ.get('VSCMD_ARG_TGT_ARCH')
 	vs_version = os.environ.get('VSCMD_VER')
-	vs_version_semver = tuple(int(part) for part in vs_version.split('.'))
+	vs_version_semver = tuple(int(part) for part in (vs_version or '0.0.0').split('.'))
 	vc_tools_dir = os.environ.get('VCINSTALLDIR')
 
 	print(f'Visual Studio target architecture: {vs_architecture}')
