@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 4.0.3)
 
-project(webrtc-template)
+project(WEBRTC_TEMPLATE)
 
 # ================================================
 # Compiler Options

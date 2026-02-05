@@ -2,8 +2,8 @@ import os
 import subprocess
 import sys
 
-script_dir = os.path.dirname(os.path.abspath(__file__))
-project_dir = os.path.abspath(os.path.join(script_dir, '..'))
+script_dir: str = os.path.dirname(os.path.abspath(__file__))
+project_dir: str = os.path.abspath(os.path.join(script_dir, '..'))
 
 def main():
 	cmake_configure = ['cmake', '-S', '.', '-B', 'build']
